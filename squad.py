@@ -3,7 +3,6 @@ from pdf2image import convert_from_path
 import pytesseract
 from PIL import Image
 import tempfile
-import openai
 import os
 from streamlit_chat import message
 import pandas as pd

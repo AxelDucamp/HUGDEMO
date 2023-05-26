@@ -4,14 +4,12 @@ name: Deploy to heroku.
 # Run workflow on every push to main branch.
 on:
   push:
-    branches: [main]
+    branches: [squad]
 
 # Your workflows jobs.
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      openai_api: ${{ secrets.OPENPAI }}
     steps:
       # Check-out your repository.
       - name: Checkout
@@ -35,7 +33,7 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
 
           # Name of the heroku application to which the build is to be sent.
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_SQUAD }}
 
           # (Optional, default: "./")
           # Dockerfile directory.

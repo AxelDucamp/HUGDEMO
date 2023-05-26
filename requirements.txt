@@ -1,6 +1,5 @@
 streamlit
 pytesseract
-openai
 pandas
 pdf2image
 Pillow
