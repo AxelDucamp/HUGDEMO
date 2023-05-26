@@ -7,15 +7,27 @@ import openai
 import os
 from streamlit_chat import message
 import pandas as pd
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 
-openai.api_key = os.getenv("OPENAI_KEY")
+#https://huggingface.co/deepset/roberta-base-squad2
+#https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1194/reports/default/15782330.pdf
+
+
+if "loaded_squad" not in st.session_state.keys():
+    model_name = "deepset/roberta-base-squad2"
+
+    nlp = pipeline('question-answering', model=model_name, tokenizer=model_name)
+
+    st.session_state["loaded_squad"] = nlp
+
+    print("Model loaded !")
 
 def add_bg_from_url():
     st.markdown(
         f"""
          <style>
          .stApp {{
-             background-image: url("https://raw.githubusercontent.com/AxelDucamp/Bayesian_Network_Deployement/ab6ff7d681c9f6d692dfb1e9cde34aacd61f3fc6/img.png");
+             background-image: url("https://raw.githubusercontent.com/AxelDucamp/Bayesian_Network_Deployement/340bd83a8d2cc5622657d984bc292c8e314d8b91/wallpapertmp.png");
              background-attachment: fixed;
              background-size: cover
          }}
@@ -25,7 +37,7 @@ def add_bg_from_url():
     )
 
 
-#add_bg_from_url()
+add_bg_from_url()
 
 # Function to convert PDF to images
 def pdf_to_img(pdf_file):
@@ -66,19 +78,6 @@ def main():
             st.text_area("Extracted Text:", st.session_state["text"], height=200)
 
     if st.session_state["check"] == True:
-        #question = st.text_input("Enter your question here : ")
-        #if st.button("Submit !"):
-        #    with st.spinner('Wait for it...'):
-        #        response = openai.ChatCompletion.create(
-        #            model="gpt-4",
-        #            messages=[
-        #                {"role": "system",
-        #                 "content": "You are an assistant looking for information in documents. Your task is to answer questions about the given text. French only"},
-        #                {"role": "user", "content": "Information about the document : " + st.session_state["text"] + ". The question is : " + question},
-        #            ]
-        #        )
-
-        #    st.write(response["choices"][0]["message"]["content"])
 
         # Initialisation des variables de session
         if 'key' not in st.session_state:
@@ -120,16 +119,22 @@ def main():
             df.to_csv("chat.csv", index=False)
             if not st.session_state['check2']:
                 with st.spinner('Wait for it...'):
-                    response = openai.ChatCompletion.create(
-                        model="gpt-4",
-                        messages=[
-                            {"role": "system",
-                             "content": "You are an assistant looking for information in documents. Your task is to answer questions about the given text. French only. The document : " + st.session_state["text"]},
-                            {"role": "user", "content": " ".join(
-                                st.session_state['chat_resume'])},
-                        ]
-                    )
-                bot_response = response["choices"][0]["message"]["content"]
+                    QA_input = {
+                        'question': st.session_state['chat_resume'][-1],
+                        'context': st.session_state["text"]
+                    }
+                    nlp = st.session_state["loaded_squad"]
+                    res = nlp(QA_input)
+                    #response = openai.ChatCompletion.create(
+                    #    model="gpt-4",
+                    #    messages=[
+                    #        {"role": "system",
+                    #         "content": "You are an assistant looking for information in documents. Your task is to answer questions about the given text. French only. The document : " + st.session_state["text"]},
+                    #        {"role": "user", "content": " ".join(
+                    #           st.session_state['chat_resume'])},
+                    #    ]
+                    #)
+                bot_response = res["answer"]#response["choices"][0]["message"]["content"]
             if bot_response:
                 st.session_state['chat_resume'].append(bot_response)
                 data = {
