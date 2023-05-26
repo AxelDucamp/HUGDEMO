@@ -15,7 +15,7 @@ def add_bg_from_url():
         f"""
          <style>
          .stApp {{
-             background-image: url("https://raw.githubusercontent.com/AxelDucamp/Bayesian_Network_Deployement/ab6ff7d681c9f6d692dfb1e9cde34aacd61f3fc6/img.png");
+             background-image: url("https://raw.githubusercontent.com/AxelDucamp/Bayesian_Network_Deployement/340bd83a8d2cc5622657d984bc292c8e314d8b91/wallpapertmp.png");
              background-attachment: fixed;
              background-size: cover
          }}
@@ -25,7 +25,7 @@ def add_bg_from_url():
     )
 
 
-#add_bg_from_url()
+add_bg_from_url()
 
 # Function to convert PDF to images
 def pdf_to_img(pdf_file):
