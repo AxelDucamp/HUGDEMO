@@ -7,6 +7,7 @@ import openai
 import os
 from streamlit_chat import message
 import pandas as pd
+from dl_pdf import download_pdf_with_url
 
 openai.api_key = os.getenv("OPENAI_KEY")
 
@@ -44,15 +45,33 @@ if 'text' not in st.session_state.keys():
 if "check" not in st.session_state.keys():
     st.session_state["check"] = False
 
+
+if "url" not in st.session_state.keys():
+    st.session_state["url"] = None
+
+
 def main():
     st.title("HUG Demo 02/06/2023")
 
     pdf_file = st.file_uploader("Upload a PDF", type=["pdf"])
 
-    if pdf_file is not None:
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            f.write(pdf_file.getvalue())
-            result = pdf_to_img(f.name)
+    st.write("Or with url : ")
+
+    URL = st.text_input("Enter a valid pdf url : ")
+
+    if st.button("With url!"):
+
+        st.session_state["url"] = download_pdf_with_url(URL)
+
+    if pdf_file is not None or st.session_state["url"] is not None:
+        if st.session_state["url"] is not None:
+            pdf_file = st.session_state["url"]
+            result = pdf_to_img("TMP.pdf")
+        else:
+            with tempfile.NamedTemporaryFile(delete=False) as f:
+                f.write(pdf_file.getvalue())
+                result = pdf_to_img(f.name)
+
         if st.button('Convert to Text'):
             st.session_state["check"] = True
             if result:
