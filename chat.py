@@ -3,11 +3,13 @@ from pdf2image import convert_from_path
 import pytesseract
 from PIL import Image
 import tempfile
+import openai
 import os
 from streamlit_chat import message
 import pandas as pd
 from dl_pdf import download_pdf_with_url
-import requests
+
+openai.api_key = os.getenv("OPENAI_KEY")
 
 def add_bg_from_url():
     st.markdown(
@@ -83,6 +85,20 @@ def main():
             st.text_area("Extracted Text:", st.session_state["text"], height=200)
 
     if st.session_state["check"] == True:
+        #question = st.text_input("Enter your question here : ")
+        #if st.button("Submit !"):
+        #    with st.spinner('Wait for it...'):
+        #        response = openai.ChatCompletion.create(
+        #            model="gpt-4",
+        #            messages=[
+        #                {"role": "system",
+        #                 "content": "You are an assistant looking for information in documents. Your task is to answer questions about the given text. French only"},
+        #                {"role": "user", "content": "Information about the document : " + st.session_state["text"] + ". The question is : " + question},
+        #            ]
+        #        )
+
+        #    st.write(response["choices"][0]["message"]["content"])
+
         # Initialisation des variables de session
         if 'key' not in st.session_state:
             st.session_state['key'] = 0
@@ -123,23 +139,16 @@ def main():
             df.to_csv("chat.csv", index=False)
             if not st.session_state['check2']:
                 with st.spinner('Wait for it...'):
-                    url = 'http://127.0.0.1.8080/pred'
-                    data = {
-                        'text' : st.session_state["text"],
-                        'question' : st.session_state['chat_resume'][-1]
-                    }
-                    response = requests.post(url, json=data)
-
-                    # response = openai.ChatCompletion.create(
-                    #     model="gpt-4",
-                    #     messages=[
-                    #         {"role": "system",
-                    #          "content": "You are an assistant looking for information in documents. Your task is to answer questions about the given text. French only. The document : " + st.session_state["text"]},
-                    #         {"role": "user", "content": " ".join(
-                    #             st.session_state['chat_resume'])},
-                    #     ]
-                    # )
-                bot_response = response.text
+                    response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=[
+                            {"role": "system",
+                             "content": "You are an assistant looking for information in documents. Your task is to answer questions about the given text. French only. The document : " + st.session_state["text"]},
+                            {"role": "user", "content": " ".join(
+                                st.session_state['chat_resume'])},
+                        ]
+                    )
+                bot_response = response["choices"][0]["message"]["content"]
             if bot_response:
                 st.session_state['chat_resume'].append(bot_response)
                 data = {
